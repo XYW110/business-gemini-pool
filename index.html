@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Gemini Pool 管理控制台</title>
+    <style>
+        :root {
+            --primary: #4285f4;
+            --primary-hover: #3367d6;
+            --primary-light: rgba(66, 133, 244, 0.1);
+            --success: #34a853;
+            --success-light: rgba(52, 168, 83, 0.1);
+            --danger: #ea4335;
+            --danger-light: rgba(234, 67, 53, 0.1);
+            --warning: #fbbc04;
+            --warning-light: rgba(251, 188, 4, 0.1);
+            --transition-speed: 0.2s;
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #202124;
+            --text-muted: #5f6368;
+            --border: #dadce0;
+            --hover-bg: #f1f3f4;
+            --input-bg: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgba(60, 64, 67, 0.1);
+            --shadow-md: 0 1px 3px 0 rgba(60, 64, 67, 0.15), 0 4px 8px 3px rgba(60, 64, 67, 0.1);
+            --shadow-lg: 0 1px 3px 0 rgba(60, 64, 67, 0.2), 0 8px 16px 4px rgba(60, 64, 67, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #202124;
+            --card-bg: #292a2d;
+            --text-main: #e8eaed;
+            --text-muted: #9aa0a6;
+            --border: #3c4043;
+            --hover-bg: #35363a;
+            --input-bg: #202124;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 4px 8px 3px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 8px 16px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding: 20px 24px;
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4285f4, #34a853, #fbbc04, #ea4335);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .header h1 span {
+            color: var(--text-muted);
+            font-weight: 400;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--success-light);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        .status-indicator::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--hover-bg);
+            border-color: var(--primary);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--card-bg);
+            padding: 6px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: var(--radius);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            background: var(--hover-bg);
+            color: var(--text-main);
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-icon {
+            font-size: 18px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title-icon {
+            font-size: 20px;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success-light);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-light);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-light);
+            color: #b06000;
+            border: 1px solid var(--warning);
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: var(--hover-bg);
+            border-color: var(--text-muted);
+            color: var(--text-main);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: var(--radius);
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--hover-bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: var(--hover-bg);
+        }
+
+        .cell-mono {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .cell-truncate {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Status Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .badge-success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-success::before {
+            background: var(--success);
+        }
+
+        .badge-danger {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .badge-danger::before {
+            background: var(--danger);
+        }
+
+        .badge-warning {
+            background: var(--warning-light);
+            color: #b06000;
+        }
+
+        .badge-warning::before {
+            background: var(--warning);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            width: 600px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            transform: scale(0.95);
+            transition: transform 0.3s;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--hover-bg);
+            color: var(--text-main);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            background: var(--hover-bg);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.blue {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .stat-icon.green {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .stat-icon.red {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .stat-icon.yellow {
+            background: var(--warning-light);
+            color: #b06000;
+        }
+
+        .stat-info h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .stat-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Settings Form */
+        .settings-section {
+            margin-bottom: 32px;
+        }
+
+        .settings-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-section h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .proxy-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 13px;
+        }
+
+        .proxy-status.checking {
+            color: var(--text-muted);
+        }
+
+        .proxy-status.success {
+            color: var(--success);
+        }
+
+        .proxy-status.error {
+            color: var(--danger);
+        }
+
+        /* Spinner */
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid currentColor;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-lg);
+            min-width: 300px;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        .toast.success .toast-icon { color: var(--success); }
+        .toast.error .toast-icon { color: var(--danger); }
+        .toast.warning .toast-icon { color: var(--warning); }
+
+        .toast-message {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">G</div>
+                <h1>Business Gemini Pool<span>管理控制台</span></h1>
+            </div>
+            <div class="header-right">
+                <div class="status-indicator" id="serviceStatus">服务运行中</div>
+                <button class="theme-toggle" onclick="toggleTheme()" title="切换主题">
+                    <span id="themeIcon">☀️</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('accounts')">
+                <span class="tab-icon">👤</span>
+                账号管理
+            </button>
+            <button class="tab" onclick="switchTab('models')">
+                <span class="tab-icon">🤖</span>
+                模型管理
+            </button>
+            <button class="tab" onclick="switchTab('settings')">
+                <span class="tab-icon">⚙️</span>
+                系统设置
+            </button>
+        </div>
+
+        <!-- 账号管理 -->
+        <div id="accounts" class="tab-content active">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">👥</div>
+                    <div class="stat-info">
+                        <h3 id="totalAccounts">0</h3>
+                        <p>总账号数</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">✓</div>
+                    <div class="stat-info">
+                        <h3 id="availableAccounts">0</h3>
+                        <p>可用账号</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red">✗</div>
+                    <div class="stat-info">
+                        <h3 id="unavailableAccounts">0</h3>
+                        <p>不可用账号</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon yellow">🔄</div>
+                    <div class="stat-info">
+                        <h3 id="currentIndex">0</h3>
+                        <p>当前轮训索引</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="card-title-icon">📋</span>
+                        账号列表
+                    </div>
+                    <button class="btn btn-primary" onclick="showAccountModal()">
+                        <span>+</span> 添加账号
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table id="accountsTable">
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>Team ID</th>
+                                <th>User Agent</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模型管理 -->
+        <div id="models" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="card-title-icon">🤖</span>
+                        模型列表
+                    </div>
+                    <button class="btn btn-primary" onclick="showModelModal()">
+                        <span>+</span> 添加模型
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table id="modelsTable">
+                        <thead>
+                            <tr>
+                                <th>模型ID</th>
+                                <th>名称</th>
+                                <th>描述</th>
+                                <th>上下文长度</th>
+                                <th>最大Token</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modelsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统设置 -->
+        <div id="settings" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="card-title-icon">⚙️</span>
+                        系统配置
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form id="settingsForm">
+                        <div class="settings-section">
+                            <h3>代理设置</h3>
+                            <div class="form-group">
+                                <label>代理地址</label>
+                                <input type="text" id="proxyUrl" placeholder="http://127.0.0.1:7890">
+                                <small>用于访问Google API的代理服务器地址</small>
+                                <div class="proxy-status" id="proxyStatus"></div>
+                            </div>
+                            <div style="display: flex; gap: 12px;">
+                                <button type="button" class="btn btn-outline" onclick="testProxy()">
+                                    测试代理
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="saveSettings()">
+                                    保存设置
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3>服务信息</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>服务端口</label>
+                                    <input type="text" value="8000" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>API地址</label>
+                                    <input type="text" value="http://localhost:8000/v1" disabled>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3>配置文件</h3>
+                            <div class="form-group">
+                                <label>当前配置 (JSON)</label>
+                                <textarea id="configJson" rows="15" readonly></textarea>
+                                <small>配置文件路径: business_gemini_session.json</small>
+                            </div>
+                            <div style="display: flex; gap: 12px;">
+                                <button type="button" class="btn btn-outline" onclick="refreshConfig()">
+                                    刷新配置
+                                </button>
+                                <button type="button" class="btn btn-outline" onclick="downloadConfig()">
+                                    下载配置
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="uploadConfig()">
+                                    导入配置
+                                </button>
+                                <input type="file" id="configFileInput" accept=".json" style="display: none;" onchange="handleConfigUpload(event)">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 添加账号模态框 -->
+    <div class="modal" id="addAccountModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加账号</h3>
+                <button class="btn" onclick="closeModal('addAccountModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Team ID</label>
+                    <input type="text" class="form-input" id="newTeamId" placeholder="输入Team ID">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cookie中的__Secure-C_SES</label>
+                    <textarea class="form-textarea" id="newSecureCses" placeholder="输入Cookie中的__Secure-C_SES" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cookie中的__Host-C_OSES</label>
+                    <textarea class="form-textarea" id="newHostCoses" placeholder="输入Cookie中的__Host-C_OSES" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">CSESIDX</label>
+                    <input type="text" class="form-input" id="newCsesidx" placeholder="输入CSESIDX">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">User Agent</label>
+                    <input type="text" class="form-input" id="newUserAgent" placeholder="输入User Agent">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('addAccountModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveNewAccount()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑账号模态框 -->
+    <div class="modal" id="editAccountModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>编辑账号</h3>
+                <button class="btn" onclick="closeModal('editAccountModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editAccountId">
+                <div class="form-group">
+                    <label class="form-label">Team ID</label>
+                    <input type="text" class="form-input" id="editTeamId" placeholder="输入Team ID">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Secure C Ses</label>
+                    <textarea class="form-textarea" id="editSecureCses" placeholder="输入Secure C Ses" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Host C Oses</label>
+                    <textarea class="form-textarea" id="editHostCoses" placeholder="输入Host C Oses" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">CSESIDX</label>
+                    <input type="text" class="form-input" id="editCsesidx" placeholder="输入CSESIDX">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">User Agent</label>
+                    <input type="text" class="form-input" id="editUserAgent" placeholder="输入User Agent">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('editAccountModal')">取消</button>
+                <button class="btn btn-primary" onclick="updateAccount()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加模型模态框 -->
+    <div class="modal" id="addModelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加模型</h3>
+                <button class="btn" onclick="closeModal('addModelModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">模型ID</label>
+                        <input type="text" class="form-input" id="newModelId" placeholder="如: gemini-pro">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">模型名称</label>
+                        <input type="text" class="form-input" id="newModelName" placeholder="如: Gemini Pro">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">描述</label>
+                    <input type="text" class="form-input" id="newModelDesc" placeholder="模型描述">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">上下文长度</label>
+                        <input type="number" class="form-input" id="newContextLength" value="32768">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">最大Token</label>
+                        <input type="number" class="form-input" id="newMaxTokens" value="8192">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('addModelModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveNewModel()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑模型模态框 -->
+    <div class="modal" id="editModelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>编辑模型</h3>
+                <button class="btn" onclick="closeModal('editModelModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editModelOriginalId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">模型ID</label>
+                        <input type="text" class="form-input" id="editModelId" placeholder="如: gemini-pro">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">模型名称</label>
+                        <input type="text" class="form-input" id="editModelName" placeholder="如: Gemini Pro">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">描述</label>
+                    <input type="text" class="form-input" id="editModelDesc" placeholder="模型描述">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">上下文长度</label>
+                        <input type="number" class="form-input" id="editContextLength">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">最大Token</label>
+                        <input type="number" class="form-input" id="editMaxTokens">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('editModelModal')">取消</button>
+                <button class="btn btn-primary" onclick="updateModel()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast通知 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // API基础URL
+        const API_BASE = '';
+        
+        // 全局数据
+        let accountsData = [];
+        let modelsData = [];
+        let configData = {};
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            loadAllData();
+            setInterval(checkServerStatus, 30000);
+        });
+
+        // 主题切换
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+            }
+        }
+
+        // 标签页切换
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            const tabBtn = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+            const tabContent = document.getElementById(tabName);
+            
+            if (tabBtn) tabBtn.classList.add('active');
+            if (tabContent) tabContent.classList.add('active');
+        }
+
+        // 加载所有数据
+        async function loadAllData() {
+            await Promise.all([
+                loadAccounts(),
+                loadModels(),
+                loadConfig(),
+                checkServerStatus()
+            ]);
+        }
+
+        // 检查服务器状态
+        async function checkServerStatus() {
+            const indicator = document.getElementById('serviceStatus');
+            if (!indicator) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/v1/status`);
+                const data = await res.json();
+                
+                indicator.textContent = '服务运行中';
+                indicator.style.color = 'var(--success-color)';
+                indicator.title = '服务运行中 - ' + new Date(data.timestamp).toLocaleString();
+                
+            } catch (e) {
+                indicator.textContent = '服务离线';
+                indicator.style.color = 'var(--danger-color)';
+                indicator.title = '服务离线';
+            }
+        }
+
+        // ==================== 账号管理 ====================
+        
+        async function loadAccounts() {
+            try {
+                const res = await fetch(`${API_BASE}/api/accounts`);
+                const data = await res.json();
+                accountsData = data.accounts || [];
+                renderAccounts();
+                updateAccountStats();
+            } catch (e) {
+                showToast('加载账号失败: ' + e.message, 'error');
+            }
+        }
+
+        function renderAccounts() {
+            const tbody = document.getElementById('accountsTableBody');
+            
+            if (accountsData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <div>暂无账号</div>
+                            <small>点击"添加账号"按钮添加新账号</small>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = accountsData.map(acc => `
+                <tr>
+                    <td><code>${acc.csesidx || '-'}</code></td>
+                    <td>${acc.team_id || '-'}</td>
+                    <td>${acc.user_agent ? (acc.user_agent.substring(0, 30) + '...') : '-'}</td>
+                    <td>
+                        <span class="badge ${acc.available ? 'badge-success' : 'badge-danger'}">
+                            ${acc.available ? '可用' : '不可用'}
+                        </span>
+                        ${acc.has_jwt ? '<span class="badge badge-info" style="margin-left:4px">JWT</span>' : ''}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm" onclick="testAccount(${acc.id})" title="测试">🔍</button>
+                        <button class="btn btn-sm" onclick="editAccount(${acc.id})" title="编辑">✏️</button>
+                        <button class="btn btn-sm ${acc.available ? 'btn-warning' : 'btn-success'}" 
+                                onclick="toggleAccount(${acc.id})" 
+                                title="${acc.available ? '禁用' : '启用'}">
+                            ${acc.available ? '⏸️' : '▶️'}
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteAccount(${acc.id})" title="删除">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateAccountStats() {
+            const total = accountsData.length;
+            const available = accountsData.filter(a => a.available).length;
+            const unavailable = total - available;
+            
+            const totalEl = document.getElementById('totalAccounts');
+            const availableEl = document.getElementById('availableAccounts');
+            const unavailableEl = document.getElementById('unavailableAccounts');
+            const currentIndexEl = document.getElementById('currentIndex');
+            
+            if (totalEl) totalEl.textContent = total;
+            if (availableEl) availableEl.textContent = available;
+            if (unavailableEl) unavailableEl.textContent = unavailable;
+            if (currentIndexEl) currentIndexEl.textContent = configData.current_account_index || 0;
+        }
+
+        function showAddAccountModal() {
+            document.getElementById('newTeamId').value = '';
+            document.getElementById('newSecureCses').value = '';
+            document.getElementById('newHostCoses').value = '';
+            document.getElementById('newCsesidx').value = '';
+            document.getElementById('newUserAgent').value = '';
+            openModal('addAccountModal');
+        }
+
+        async function saveNewAccount() {
+            const account = {
+                team_id: document.getElementById('newTeamId').value,
+                secure_c_ses: document.getElementById('newSecureCses').value,
+                host_c_oses: document.getElementById('newHostCoses').value,
+                csesidx: document.getElementById('newCsesidx').value,
+                user_agent: document.getElementById('newUserAgent').value
+            };
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/accounts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(account)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('账号添加成功', 'success');
+                    closeModal('addAccountModal');
+                    loadAccounts();
+                } else {
+                    showToast('添加失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (e) {
+                showToast('添加失败: ' + e.message, 'error');
+            }
+        }
+
+        function editAccount(id) {
+            const acc = accountsData.find(a => a.id === id);
+            if (!acc) return;
+            
+            document.getElementById('editAccountId').value = id;
+            document.getElementById('editTeamId').value = acc.team_id || '';
+            document.getElementById('editSecureCses').value = acc.secure_c_ses || '';
+            document.getElementById('editHostCoses').value = acc.host_c_oses || '';
+            document.getElementById('editCsesidx').value = acc.csesidx || '';
+            document.getElementById('editUserAgent').value = acc.user_agent ? acc.user_agent.replace('...', '') : '';
+            
+            openModal('editAccountModal');
+        }
+
+        async function updateAccount() {
+            const id = document.getElementById('editAccountId').value;
+            const account = {};
+            
+            const teamId = document.getElementById('editTeamId').value;
+            const secureCses = document.getElementById('editSecureCses').value;
+            const hostCoses = document.getElementById('editHostCoses').value;
+            const csesidx = document.getElementById('editCsesidx').value;
+            const userAgent = document.getElementById('editUserAgent').value;
+            
+            if (teamId) account.team_id = teamId;
+            if (secureCses) account.secure_c_ses = secureCses;
+            if (hostCoses) account.host_c_oses = hostCoses;
+            if (csesidx) account.csesidx = csesidx;
+            if (userAgent) account.user_agent = userAgent;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/accounts/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(account)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('账号更新成功', 'success');
+                    closeModal('editAccountModal');
+                    loadAccounts();
+                } else {
+                    showToast('更新失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (e) {
+                showToast('更新失败: ' + e.message, 'error');
+            }
+        }
+
+        async function deleteAccount(id) {
+            if (!confirm('确定要删除这个账号吗？')) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/accounts/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('账号已删除', 'success');
+                    loadAccounts();
+                } else {
+                    showToast('删除失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (e) {
+                showToast('删除失败: ' + e.message, 'error');
+            }
+        }
+
+        async function toggleAccount(id) {
+            try {
+                const res = await fetch(`${API_BASE}/api/accounts/${id}/toggle`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast(data.available ? '账号已启用' : '账号已禁用', 'success');
+                    loadAccounts();
+                } else {
+                    showToast('操作失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (e) {
+                showToast('操作失败: ' + e.message, 'error');
+            }
+        }
+
+        async function testAccount(id) {
+            showToast('正在测试账号...', 'info');
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/accounts/${id}/test`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('测试成功: ' + data.message, 'success');
+                    loadAccounts();
+                } else {
+                    showToast('测试失败: ' + data.message, 'error');
+                }
+            } catch (e) {
+                showToast('测试失败: ' + e.message, 'error');
+            }
+        }
+
+        // ==================== 模型管理 ====================
+        
+        async function loadModels() {
+            try {
+                const res = await fetch(`${API_BASE}/api/models`);
+                const data = await res.json();
+                modelsData = data.models || [];
+                renderModels();
+            } catch (e) {
+                showToast('加载模型失败: ' + e.message, 'error');
+            }
+        }
+
+        function renderModels() {
+            const tbody = document.getElementById('modelsTableBody');
+            
+            if (modelsData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <div>暂无模型</div>
+                            <small>点击"添加模型"按钮添加新模型</small>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = modelsData.map(model => `
+                <tr>
+                    <td><code>${model.id}</code></td>
+                    <td>${model.name || model.id}</td>
+                    <td>${model.description || '-'}</td>
+                    <td>${model.context_length?.toLocaleString() || '-'}</td>
+                    <td>${model.max_tokens?.toLocaleString() || '-'}</td>
+                    <td>
+                        <span class="badge ${model.enabled !== false ? 'badge-success' : 'badge-danger'}">
+                            ${model.enabled !== false ? '启用' : '禁用'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm" onclick="editModel('${model.id}')" title="编辑">✏️</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteModel('${model.id}')" title="删除">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddModelModal() {
+            document.getElementById('newModelId').value = '';
+            document.getElementById('newModelName').value = '';
+            document.getElementById('newModelDesc').value = '';
+            document.getElementById('newContextLength').value = '32768';
+            document.getElementById('newMaxTokens').value = '8192';
+            openModal('addModelModal');
+        }
+
+        async function saveNewModel() {
+            const model = {
+                id: document.getElementById('newModelId').value,
+                name: document.getElementById('newModelName').value,
+                description: document.getElementById('newModelDesc').value,
+                context_length: parseInt(document.getElementById('newContextLength').value) || 32768,
+                max_tokens: parseInt(document.getElementById('newMaxTokens').value) || 8192,
+                enabled: true
+            };
+            
+            if (!model.id) {
+                showToast('请输入模型ID', 'error');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/models`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(model)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('模型添加成功', 'success');
+                    closeModal('addModelModal');
+                    loadModels();
+                } else {
+                    showToast('添加失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (e) {
+                showToast('添加失败: ' + e.message, 'error');
+            }
+        }
+
+        function editModel(id) {
+            const model = modelsData.find(m => m.id === id);
+            if (!model) return;
+            
+            document.getElementById('editModelOriginalId').value = id;
+            document.getElementById('editModelId').value = model.id;
+            document.getElementById('editModelName').value = model.name || '';
+            document.getElementById('editModelDesc').value = model.description || '';
+            document.getElementById('editContextLength').value = model.context_length || 32768;
+            document.getElementById('editMaxTokens').value = model.max_tokens || 8192;
+            
+            openModal('editModelModal');
+        }
+
+        async function updateModel() {
+            const originalId = document.getElementById('editModelOriginalId').value;
+            const model = {
+                id: document.getElementById('editModelId').value,
+                name: document.getElementById('editModelName').value,
+                description: document.getElementById('editModelDesc').value,
+                context_length: parseInt(document.getElementById('editContextLength').value) || 32768,
+                max_tokens: parseInt(document.getElementById('editMaxTokens').value) || 8192
+            };
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/models/${originalId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(model)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('模型更新成功', 'success');
+                    closeModal('editModelModal');
+                    loadModels();
+                } else {
+                    showToast('更新失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (e) {
+                showToast('更新失败: ' + e.message, 'error');
+            }
+        }
+
+        async function deleteModel(id) {
+            if (!confirm('确定要删除这个模型吗？')) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/models/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('模型已删除', 'success');
+                    loadModels();
+                } else {
+                    showToast('删除失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (e) {
+                showToast('删除失败: ' + e.message, 'error');
+            }
+        }
+
+        // ==================== 系统设置 ====================
+        
+        async function loadConfig() {
+            try {
+                const res = await fetch(`${API_BASE}/api/config`);
+                configData = await res.json();
+                
+                document.getElementById('proxyUrl').value = configData.proxy || '';
+                document.getElementById('configJson').value = JSON.stringify(configData, null, 2);
+                
+                // 检查代理状态
+                if (configData.proxy) {
+                    checkProxyStatus();
+                }
+            } catch (e) {
+                showToast('加载配置失败: ' + e.message, 'error');
+            }
+        }
+
+        async function saveProxy() {
+            const proxy = document.getElementById('proxyUrl').value;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/config`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ proxy })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('代理设置已保存', 'success');
+                    loadConfig();
+                } else {
+                    showToast('保存失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (e) {
+                showToast('保存失败: ' + e.message, 'error');
+            }
+        }
+
+        // 保存设置（调用saveProxy）
+        async function saveSettings() {
+            await saveProxy();
+        }
+
+        async function testProxy() {
+            const proxy = document.getElementById('proxyUrl').value;
+            showToast('正在测试代理...', 'info');
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/proxy/test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ proxy })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('代理测试成功: ' + data.message, 'success');
+                    document.getElementById('proxyStatus').innerHTML = '<span class="badge badge-success">可用</span>';
+                } else {
+                    showToast('代理测试失败: ' + data.message, 'error');
+                    document.getElementById('proxyStatus').innerHTML = '<span class="badge badge-danger">不可用</span>';
+                }
+            } catch (e) {
+                showToast('代理测试失败: ' + e.message, 'error');
+                document.getElementById('proxyStatus').innerHTML = '<span class="badge badge-danger">不可用</span>';
+            }
+        }
+
+        async function checkProxyStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/api/proxy/status`);
+                const data = await res.json();
+                
+                if (data.enabled) {
+                    document.getElementById('proxyStatus').innerHTML = '<span class="badge badge-success">已启用</span>';
+                } else {
+                    document.getElementById('proxyStatus').innerHTML = '<span class="badge badge-warning">未启用</span>';
+                }
+            } catch (e) {
+                document.getElementById('proxyStatus').innerHTML = '<span class="badge badge-danger">未知</span>';
+            }
+        }
+
+        // ==================== 配置导入导出 ====================
+        
+        async function exportConfig() {
+            try {
+                const res = await fetch(`${API_BASE}/api/config/export`);
+                const data = await res.json();
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `gemini-config-${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showToast('配置已导出', 'success');
+            } catch (e) {
+                showToast('导出失败: ' + e.message, 'error');
+            }
+        }
+
+        function uploadConfig() {
+            document.getElementById('configFileInput').click();
+        }
+
+        async function handleConfigUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            try {
+                const text = await file.text();
+                const config = JSON.parse(text);
+                
+                const res = await fetch(`${API_BASE}/api/config/import`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('配置导入成功', 'success');
+                    loadAllData();
+                } else {
+                    showToast('导入失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (e) {
+                showToast('导入失败: ' + e.message, 'error');
+            }
+            
+            event.target.value = '';
+        }
+
+        // ==================== 模态框控制 ====================
+        
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('show');
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+
+        // 点击模态框外部关闭
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                }
+            });
+        });
+
+        // ==================== Toast通知 ====================
+        
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ==================== 刷新功能 ====================
+        
+        function refreshAccounts() {
+            showToast('正在刷新账号列表...', 'info');
+            loadAccounts();
+        }
+
+        function refreshModels() {
+            showToast('正在刷新模型列表...', 'info');
+            loadModels();
+        }
+    </script>
+</body>
+</html>
